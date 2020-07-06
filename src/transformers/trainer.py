@@ -359,7 +359,11 @@ class Trainer:
             logger.info(
                 'Automatic Weights & Biases logging enabled, to disable set os.environ["WANDB_DISABLED"] = "true"'
             )
-            wandb.init(project=os.getenv("WANDB_PROJECT", "huggingface"), config=self.args.to_sanitized_dict())
+            # only init wandb if a run is not already initialized
+            if wandb.run is None:
+                wandb.init(project=os.getenv("WANDB_PROJECT", "huggingface"), config=self.args.to_sanitized_dict())
+            else:
+                wandb.config.update(self.args.to_sanitized_dict())
             # keep track of model topology and gradients, unsupported on TPU
             if not is_torch_tpu_available() and os.getenv("WANDB_WATCH") != "false":
                 wandb.watch(
